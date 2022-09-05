@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: recyler-pod
+  namespace: openshift-infra
+spec:
+  activeDeadlineSeconds: 60
+  restartPolicy: Never
+  serviceAccountName: pv-recycler-controller
+  containers:
+    -
+      name: recyler-container
+      image: "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:5aa5efe071bed792ad03d7e31862f0d54369097d80d21d25553984b3ae27b730"
+      command:
+      - "/bin/bash"
+      args:
+      - "-c"
+      - "test -e /scrub && rm -rf /scrub/..?* /scrub/.[!.]* /scrub/*  && test -z \"$(ls -A /scrub)\" || exit 1"
+      volumeMounts:
+        -
+          mountPath: /scrub
+          name: vol
+      securityContext:
+        runAsUser: 0
+  volumes:
+    -
+      name: vol
